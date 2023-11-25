@@ -87,7 +87,7 @@ const Billing = () => {
     const newData = [...data];
     newData[index].quantity += change;
     if (newData[index].quantity < 1) {
-      newData[index].quantity = 1;
+      newData.splice(index, 1);
     }
     setData(newData);
   };
