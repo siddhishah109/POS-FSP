@@ -1,0 +1,21 @@
+
+.headtile1 {
+    background: #0d99ff;
+    padding-left: 40px;
+    padding-right: 40px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    color: white;
+}
+.head-title{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6vh;
+    margin-bottom: 6vh;
+    font-size: x-large;
+}
+
+.dashboard{
+    padding-left: 5vw;
+    padding-right: 5vw;
+}
