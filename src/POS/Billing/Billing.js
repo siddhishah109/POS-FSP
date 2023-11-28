@@ -12,13 +12,12 @@ const Billing = () => {
 
       if (isAlphanumeric(key)) {
         setInputCode((prevInput) => prevInput + key);
-      } else if (key === 'Enter') {
-        handleAddProduct();
       } else {
-        if (inputCode.trim() !== '') {
-          setWords((prevWords) => [...prevWords, inputCode]);
-          setInputCode('');
-        }
+        // if (inputCode.trim() !== '') {
+        //   setWords((prevWords) => [...prevWords, inputCode]);
+        //   setInputCode('');
+        // }
+        handleAddProduct();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
