@@ -70,7 +70,7 @@ table{
   .table-billing td {
     background-color: white;
     padding: 10px;
-    font-size: x-large;
+    font-size: large;
     font-weight: 500;
 }
 
@@ -78,7 +78,7 @@ table{
     border-top: 30px solid #0d99ff;
 }
 .table-billing thead .title-row th {
-    font-size: x-large;
+    font-size: large;
     font-weight: 500;
   }
 .span-th{

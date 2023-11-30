@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Billing.css';
 import Row from 'react-bootstrap/Row';
+import axios from '../../config/axios';
 
 const Billing = () => {
   const [data, setData] = useState([]);
@@ -12,7 +13,7 @@ const Billing = () => {
 
       if (isAlphanumeric(key)) {
         setInputCode((prevInput) => prevInput + key);
-      } else {
+              } else {
         // if (inputCode.trim() !== '') {
         //   setWords((prevWords) => [...prevWords, inputCode]);
         //   setInputCode('');
@@ -24,7 +25,6 @@ const Billing = () => {
     handleAddProduct();
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      handleAddProduct();
     };
   }, [inputCode]);
 
@@ -37,27 +37,81 @@ const Billing = () => {
     }
     setData(newData);
   };
-     const getProductByCode = (code) => {
-       const products = {
-         'A123': { barcode: 'A123', productName: 'Product X', totalPrice: 20 },
-         'B456': { barcode: 'B456', productName: 'Product Y', totalPrice: 30 },
-         'C789': { barcode: 'C789', productName: 'Product Z', totalPrice: 40 },
-         'D101': { barcode: 'D101', productName: 'Product W', totalPrice: 25 },
-         'E202': { barcode: 'E202', productName: 'Product V', totalPrice: 35 },
-         'F303': { barcode: 'F303', productName: 'Product U', totalPrice: 45 },
-       };
-       return products[code];
-     }
-  const handleAddProduct = () => {
-    const product = getProductByCode(inputCode);
+    const getProductByCode = async (code) => {
+      try {
+        const response = await axios.get(`pos/get_pos_store/PANVEL1`);
+        const products = response.data.products;
+        const product = products.find((p) => p.productBarcode === code);
+    
+        if (product) {
+          return {
+            barcode: product.productBarcode,
+            productName: product.productName,
+            offer: product.productOffer,
+            totalPrice: product.sellingPrice, 
+          };
+        } else {
+          console.log(`Product not found for code: ${code}`);
+          return null;
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        return null;
+      }
+    };
+  const handleAddProduct = async () => {
+    const product = await getProductByCode(inputCode);
     if (product) {
-      const newData = [...data, { ...product, quantity: 1 }];
-      setData(newData);
+      console.log('Product:', product);
+      console.log('DAATA:', data);
+
+      const existingProductIndex = data.findIndex((item) => item.barcode === product.barcode);
+  
+      if (existingProductIndex !== -1) {
+        const newData = [...data];
+        console.log(newData);
+        console.log('Before update:', newData);
+        newData[existingProductIndex].quantity ++;
+        console.log('After update:', newData);
+        setData(newData);
+        console.log(newData);
+      } else {
+        const newData = [...data, { ...product, quantity: 1 }];
+        setData(newData);
+      }
+  
       setInputCode('');
     } else {
       console.log(`Product not found for code: ${inputCode}`);
     }
   };
+
+  const calculateTotalPrice = (item) => {
+    if (item.offer === 'NOPR') {
+      return item.quantity * item.totalPrice; // No discount
+    } else if (item.offer.startsWith('F')) {
+      const discountPercentage = parseInt(item.offer.substring(1), 10);
+      const discountedPrice = item.totalPrice * (1 - discountPercentage / 100);
+      return item.quantity * discountedPrice;
+    } 
+    
+    // else if (item.offer.startsWith('B')) {
+    //   const [, buyCount, getCount] = item.offer.match(/B(\d+)G(\d+)/) || [];
+    //   if (buyCount && getCount) {
+    //     const totalItemCount = parseInt(buyCount, 10) + parseInt(getCount, 10);
+    //     const setsOfOffer = Math.floor(item.quantity / totalItemCount);
+    //     const remainingItems = item.quantity % totalItemCount;
+  
+    //     const fullPriceItemCount = setsOfOffer * parseInt(buyCount, 10);
+    //     const discountedItemCount = Math.min(remainingItems, parseInt(buyCount, 10));
+    //     const discountedPrice = item.totalPrice * (1 - (fullPriceItemCount * item.totalPrice) / (item.quantity * item.totalPrice));
+  
+    //     return discountedItemCount * discountedPrice + (remainingItems - discountedItemCount) * item.totalPrice;
+    //   }
+    // }
+  };
+
+
   return (
     <div className='body'>
       <div className='billing-tick-row'>
@@ -76,7 +130,9 @@ const Billing = () => {
               <tr className="title-row">
                 <th className="d-flex align-items-start"><span className='span-th'>Barcode No.</span></th>
                 <th className=""><span className='span-th'>Product Name</span></th>
-                <th className=""><span className='span-th'>Qtty</span></th>
+                <th className=""><span className='span-th'>Qtty</span>
+                </th><th className=""><span className='span-th'>Rate</span></th>
+                <th className=""><span className='span-th'>Offer</span></th>
                 <th className="d-flex justify-content-end"><span className='span-th'>Total Price</span></th>
               </tr>
             </thead>
@@ -93,6 +149,8 @@ const Billing = () => {
                     </div>
                   </td>
                   <td>{item.totalPrice}</td>
+                  <td>{item.offer}</td>
+                  <td>{calculateTotalPrice(item)}</td>
                 </tr>
               ))}
             </tbody>
