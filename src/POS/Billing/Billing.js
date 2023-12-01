@@ -14,10 +14,6 @@ const Billing = () => {
       if (isAlphanumeric(key)) {
         setInputCode((prevInput) => prevInput + key);
               } else {
-        // if (inputCode.trim() !== '') {
-        //   setWords((prevWords) => [...prevWords, inputCode]);
-        //   setInputCode('');
-        // }
         handleAddProduct();
       }
     };
@@ -109,6 +105,20 @@ const Billing = () => {
     //     return discountedItemCount * discountedPrice + (remainingItems - discountedItemCount) * item.totalPrice;
     //   }
     // }
+    else if (item.offer.startsWith('B')) {
+      const [, buyCount, getCount] = item.offer.match(/B(\d+)G(\d+)/) || [];
+      if (buyCount && getCount) {
+        const totalItemCount = parseInt(buyCount, 10) + parseInt(getCount, 10);
+        const setsOfOffer = Math.floor(item.quantity / totalItemCount);
+        const remainingItems = item.quantity % totalItemCount;
+  
+        const fullSetsPrice = setsOfOffer * parseInt(buyCount, 10) * item.totalPrice;
+        const remainingItemsPrice = remainingItems * item.totalPrice;
+  
+        return fullSetsPrice + remainingItemsPrice;
+      }
+    }
+   
   };
 
 
